@@ -338,12 +338,21 @@ def play_game(li, game_id, control_queue, user_profile, config, challenge_queue,
                         best_move, ponder_move = get_pondering_result(engine, game, board.move_stack, ponder_thread, ponder_usi)
                         move_attempted = True
                         if best_move is None:
-                            best_move, ponder_move = play_midgame_move(engine, board, upd["btime"], upd["wtime"], move_overhead, start_time, logger, game)
+                            if game.clock_initial == 0 and game.state["binc"] == 0:
+                                best_move, ponder_move = play_midgame_move(engine, board, 0, 0, move_overhead, start_time, logger, game)
+                            else:
+                                best_move, ponder_move = play_midgame_move(engine, board, upd["btime"], upd["wtime"], move_overhead, start_time, logger, game)
                             if best_move is None:
                                 best_move, ponder_move = get_online_move(li, board, game, online_moves_cfg)
-                    li.make_move(game.id, best_move)
+                    if best_move == "resign":
+                        li.resign(game.id)
+                    else:
+                        li.make_move(game.id, best_move)
                     if can_ponder:
-                        ponder_thread, ponder_usi = start_pondering(engine, board, best_move, ponder_move, upd["btime"], upd["wtime"], game, logger, move_overhead, start_time, can_ponder)
+                        if game.clock_initial == 0 and game.state["binc"] == 0:
+                            ponder_thread, ponder_usi = start_pondering(engine, board, best_move, ponder_move, 0, 0, game, logger, move_overhead, start_time, can_ponder)
+                        else:    
+                            ponder_thread, ponder_usi = start_pondering(engine, board, best_move, ponder_move, upd["btime"], upd["wtime"], game, logger, move_overhead, start_time, can_ponder)
                     time.sleep(delay_seconds)
                 elif len(board.move_stack) == 0:
                     correspondence_disconnect_time = correspondence_cfg.get("disconnect_time", 300)

@@ -147,10 +147,10 @@ class Engine:
             builder.append("depth")
             builder.append(str(depth))
         # In Shogi and USI, black is the player to move first
-        if btime is not None:
+        if btime is not None and btime != 0:
             builder.append("btime")
             builder.append(str(btime))
-        if wtime is not None:
+        if wtime is not None and wtime != 0:
             builder.append("wtime")
             builder.append(str(wtime))
         if binc is not None:
